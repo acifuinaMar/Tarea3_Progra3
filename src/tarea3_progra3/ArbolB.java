@@ -10,9 +10,11 @@ package tarea3_progra3;
 public class ArbolB {
     NodoB raiz;
     int m;  // orden del árbol
+    int t;
 
     public ArbolB(int m) {
         this.m = m;
+        this.t = (int) Math.ceil(m/2.0);
         this.raiz = new NodoB(m, true);
     }
     //Método para insertar
@@ -22,20 +24,24 @@ public class ArbolB {
         }
 
         if (raiz.nClaves == m - 1) {
+            // Crear nueva raíz
             NodoB nuevaRaiz = new NodoB(m, false);
             nuevaRaiz.hijos[0] = raiz;
             raiz = nuevaRaiz;
+
+            // Dividir el hijo (raíz original)
             raiz.dividirHijo(0);
 
-            // Decidir en qué hijo insertar
-            int i = 0;
+            // Insertar en el subárbol correcto
             if (k > raiz.claves[0]) {
-                i = 1;
+                raiz.hijos[1].insertarAux(k);
+            } else {
+                raiz.hijos[0].insertarAux(k);
             }
-            raiz.hijos[i].insertarAux(k);
         } else {
             raiz.insertarAux(k);
         }
+        raiz.debug("");
     }
     //Metodo para eliminar
     public void eliminar(int k) {

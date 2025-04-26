@@ -4,10 +4,6 @@
  */
 package tarea3_progra3;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  *
  * @author motit
@@ -22,10 +18,10 @@ public class NodoB {
 
     public NodoB(int m, boolean hoja) {
         this.m = m;
-        this.t = (int) Math.ceil(m / 2.0);
+        this.t = (int) Math.ceil(m / 2.0)-1;
         this.hoja = hoja;
-        this.claves = new int[m]; // ← máximo m-1 claves
-        this.hijos = new NodoB[m+1];    // ← máximo m hijos
+        this.claves = new int[m-1]; // ← máximo m-1 claves
+        this.hijos = new NodoB[m];    // ← máximo m hijos
         this.nClaves = 0;
     }
 
@@ -34,7 +30,7 @@ public class NodoB {
         int i = nClaves - 1;
 
         if (hoja) {
-            // Insertar en hoja
+            // Insertar manteniendo orden
             while (i >= 0 && clave < claves[i]) {
                 claves[i + 1] = claves[i];
                 i--;
@@ -48,9 +44,11 @@ public class NodoB {
             }
             i++;
 
+            // Verificar si necesita división
             if (hijos[i].nClaves == m - 1) {
                 dividirHijo(i);
 
+                // Actualizar índice si es necesario
                 if (clave > claves[i]) {
                     i++;
                 }
@@ -60,38 +58,40 @@ public class NodoB {
     }
 
     public void dividirHijo(int i) {
-        NodoB y = hijos[i];
+        NodoB y = hijos[i]; // Nodo a dividir
         NodoB z = new NodoB(m, y.hoja);
         z.nClaves = t - 1;
 
-        // Copiar las últimas t-1 claves a z
+        // La clave MEDIA está en posición t (para m=3, posición 1)
+        int claveMedia = y.claves[t]; // ¡Este es el cambio crucial!
+
+        // Copiar claves mayores que la media a z
         for (int j = 0; j < t - 1; j++) {
-            z.claves[j] = y.claves[j + t];
-            y.claves[j + t] = 0; // Limpiar
+            z.claves[j] = y.claves[j + t + 1];
+            y.claves[j + t + 1] = 0; // Limpiar
         }
 
-        // Copiar los hijos si no es hoja
+        // Copiar hijos si no es hoja
         if (!y.hoja) {
             for (int j = 0; j < t; j++) {
-                z.hijos[j] = y.hijos[j + t];
-                y.hijos[j + t] = null;
+                z.hijos[j] = y.hijos[j + t + 1];
+                y.hijos[j + t + 1] = null;
             }
         }
 
-        y.nClaves = t - 1;
-
-        // Hacer espacio para el nuevo hijo
-        for (int j = nClaves; j >= i + 1; j--) {
-            hijos[j + 1] = hijos[j];
-        }
-        hijos[i + 1] = z;
+        y.nClaves = t; // y conserva t claves (no t-1)
 
         // Mover la clave media al padre
-        for (int j = nClaves - 1; j >= i; j--) {
-            claves[j + 1] = claves[j];
+        for (int j = nClaves; j > i; j--) {
+            claves[j] = claves[j - 1];
         }
-        claves[i] = y.claves[t - 1];
-        y.claves[t - 1] = 0; // Limpiar
+        claves[i] = claveMedia; // Usar la clave media correcta
+
+        // Ajustar hijos
+        for (int j = nClaves + 1; j > i + 1; j--) {
+            hijos[j] = hijos[j - 1];
+        }
+        hijos[i + 1] = z;
 
         nClaves++;
     }
@@ -325,4 +325,20 @@ public class NodoB {
         hijo.nClaves++;
         hermano.nClaves--;
     }
-}
+    public void debug(String indent) {
+        System.out.print(indent + "Claves: ");
+        for (int i = 0; i < nClaves; i++) {
+            System.out.print(claves[i] + " ");
+        }
+        System.out.println();
+
+        if (!hoja) {
+            for (int i = 0; i <= nClaves; i++) {
+                if (hijos[i] != null) {
+                    System.out.println(indent + "Hijo " + i + ":");
+                    hijos[i].debug(indent + "  ");
+                }
+            }
+        }
+    }
+    }
